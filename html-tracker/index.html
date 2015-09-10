@@ -31,6 +31,7 @@
 <tr><td><code>Longitude</code></td><td><div style="color:#0000FF; font-size: 10pt" id="lonbox"></td></tr>
 <tr><td><code>Moving Speed</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="mspeed"></div><code><font size="2">&nbsp;Kmh</font></code></td></tr>
 <tr><td><code>Last Move</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="lmove"></td></tr>
+<tr><td><code>Lost mode? <code><input type="checkbox" onclick='modeClick(this);'></td></tr>
 <tr><td colspan="2"><hr></td></tr>
 <tr><td colspan="2"><div style="font-size: 8pt; font-family:Tahoma, Geneva, sans-serif" id="rfresh"></div></td></tr>
 </table>
@@ -213,6 +214,10 @@ function getlatlon() {
 	{
 		$("#msg").html('<pre><code class="prettyprint">AJAX Request Failed<br/> textStatus='+textStatus+', errorThrown='+errorThrown+'</code></pre>');
 	});
+}
+
+function modeClick(vl){
+	alert("Now lost mode is " + vl.checked);
 }
 
 function timecount() {
