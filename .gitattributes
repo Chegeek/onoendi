@@ -11,9 +11,6 @@
 *.htm text
 *.html text
 *.xml text
-*.txt text
-*.ini text
-*.inc text
 .htaccess text
 
 # Standard to msysgit
