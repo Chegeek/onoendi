@@ -1,0 +1,5 @@
+Options +FollowSymlinks
+RewriteEngine On
+RewriteRule ^view(.*) ./dataview.php
+RewriteRule ^gettinglocation(.*) ./getloc.php
+RewriteRule ^locking(.*) ./positionlock.php
