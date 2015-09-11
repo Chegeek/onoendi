@@ -9,7 +9,8 @@ $geoloc = array(
     "device_id" => "$row[0]",
     "latitude" => "$row[1]",
     "longitude" => "$row[2]",
-    "lastmove" => "$row[3]"
+    "mspeed" => "$row[3]",
+    "lastmove" => "$row[4]"
 );
 echo json_encode($geoloc);
 mysql_close(); 

@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>ONOENDI Device Tracker</title>
+<meta name="description" content="Device tracker by Yugan Studio Works.">
+<meta name="keywords" content="latitude, longitude, ONOENDI, device tracker, Yugan Studio">
+</head>
+<body onload="InitMap()">
+<table cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td><h2>ONOENDI</h2></td>
+<td><font style="clear:both; padding:1px; font-size:9pt; font-family:arial, helvetica, sans-serif">&nbsp; product by Yugan Studio Works</font></td>
+</tr>
+</table>
+<center>
+<table cellpadding="5" cellspacing="0" border="1">
+<tr>
+<td width="60%" valign="top">
+<div id="wrapper" style="margin:5px">
+<div id="map" style="width: 900px; height: 475px"></div>
+</div>
+</td>
+<td valign="top">
+<font style="clear:both; font-weight: bold; font-size:15pt; font-family:arial, helvetica, sans-serif">Get the Latitude and Longitude</font>
+<hr>
+<table width="100%" border="0">
+<tr><td width="30%"><code>Device Id</code></td><td><div style="font-weight: bold; font-size: 10pt" id="device_id"></td></tr>
+<tr><td><code>Registered to</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="owner"></div></td></tr>
+<tr><td><code>Latitude</code></td><td><div style="color:#0000FF; font-size: 10pt" id="latbox"></td></tr>
+<tr><td><code>Longitude</code></td><td><div style="color:#0000FF; font-size: 10pt" id="lonbox"></td></tr>
+<tr><td><code>Moving Speed</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="mspeed"></div></td></tr>
+<tr><td><code>Last Move</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="lmove"></td></tr>
+<tr><td><code>Lost mode? <code><input type="checkbox" onclick='lostmodeClick(this);'></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><td colspan="2"><div style="font-size: 8pt; font-family:Tahoma, Geneva, sans-serif" id="rfresh"></div></td></tr>
+</table>
+</td>
+</tr>
+</table>
+</td>
+</tr></table>
+</div>
+</div>
+</center>
+<form name="mapform" id="mapform" action="gettinglocation" method="POST">
+<input type="hidden" value="GP2136EF" name="device_id"/>
+</form>
+<!-- footer :D -->
+<br>
+<center><font style="clear:both; padding:10px; text-align:center; font-size:10pt; font-family:arial, helvetica, sans-serif">Copyright © 2015 Yugan Studio Works All Rights Reserved.</font></center>
+    <!-- Placed at the end of the document so the pages load faster -->
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+// Latitude and Longitude math routines are from: http://www.fcc.gov/mb/audio/bickel/DDDMMSS-decimal.html
+
+var map = null;
+var marker = null;
+var markers = [];
+var lostmode = false;
+var newmap = null;
+
+var latbox='';
+var lonbox='';
+var t = 5;
+
+function InitMap() {
+	var CenterCity = new google.maps.LatLng(-6.117427, 106.153011);
+
+	var mapParam = {
+		scaleControl:true,
+		zoom:13,
+		zoomControl:false,
+		zoomControlOptions: {style:google.maps.ZoomControlStyle.LARGE},
+		center: CenterCity,
+		disableDoubleClickZoom:true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+
+	map = new google.maps.Map(document.getElementById("map"), mapParam);
+	map.setTilt(0);
+	map.panTo(CenterCity);
+}
+
+// menampilkan info
+function displayLatLon(point){
+	document.getElementById("latbox").innerHTML = point.lat().toFixed(6);
+	document.getElementById("lonbox").innerHTML = point.lng().toFixed(6);	
+}
+
+function addMarker(location) {
+  var marker = new google.maps.Marker({
+    position: location,
+    map: map, draggable:false
+  });
+  markers.push(marker);
+}
+
+// Sets the map on all markers in the array.
+function setMapOnAll(map) {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(map);
+  }
+}
+
+// Removes the markers from the map, but keeps them in the array.
+function clearMarkers() {
+  setMapOnAll(null);
+  markers = [];
+}
+
+function Marking(latbox,lonbox) {
+	// for tracking the 'Lost-Mode'
+	if (lostmode){
+		newmap = new google.maps.LatLng(latbox, lonbox); 
+		
+		addMarker(newmap);
+		map.panTo(newmap);
+		displayLatLon(newmap);
+			//ll = new google.maps.LatLng(latbox, lonbox); 
+			//map.panTo(ll);
+			//computepos(ll);
+			//marker.setPosition(map.getCenter());
+	} else {
+		newmap = new google.maps.LatLng(latbox, lonbox); 
+		
+		clearMarkers();
+		addMarker(newmap);
+		map.panTo(newmap);
+		displayLatLon(newmap);
+	}
+}
+
+var myVar = setInterval(function(){timecount();},1000);
+
+function getlatlon() {	
+	var formData = $("#mapform").serializeArray();
+	
+	var URL = $("#mapform").attr('action');
+	$.post(URL, formData, function(data, textStatus, jqXHR){
+		var geoloc = JSON.parse(data);
+		//alert(geoloc.device_id);
+		Marking(geoloc.latitude,geoloc.longitude);
+		document.getElementById("device_id").innerHTML = geoloc.device_id;
+		document.getElementById("owner").innerHTML = 'Luqman Sahidin';	
+		document.getElementById("mspeed").innerHTML = geoloc.mspeed + ' kmph';
+		document.getElementById("lmove").innerHTML = geoloc.lastmove;
+			
+	}).fail(function(jqXHR, textStatus, errorThrown) 
+	{
+		$("#msg").html('<pre><code class="prettyprint">AJAX Request Failed<br/> textStatus='+textStatus+', errorThrown='+errorThrown+'</code></pre>');
+	});
+}
+
+function lostmodeClick(value){
+	if (value.checked){
+		lostmode = true;
+	} else {
+		lostmode = false;
+	}
+}
+
+function timecount() {
+	document.getElementById("rfresh").innerHTML = 'wait ' + t +' second(s) to update';
+	t = t-1;
+	if (t<0) {
+		getlatlon();
+		t = 5;
+	}
+}
+
+//]]>
+</script>
+</body>
+</html>
