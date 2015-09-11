@@ -1,4 +1,4 @@
-## ONOENDI
+# ONOENDI
 GPS Tracker Arduino Based, this is normally Geo Location until now, there is no special function. 
 Built from shield by shield but not using GSM shield, I mean this way is alternative that I have:
 1. Arduino UNO R3, when I was built in my 1st test
@@ -13,7 +13,8 @@ Built from shield by shield but not using GSM shield, I mean this way is alterna
 - Engine shutdown remotely (will..)
 - Environment monitoring/reporting (will..)
 
-Luqman Sahidin
+# Copyright
+Luqman Sahidin<br>
 2015-09-05
 
 This file was downloaded from http://www.github.com/lsahidin/ONOENDI
