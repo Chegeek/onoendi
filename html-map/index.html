@@ -31,7 +31,7 @@
 <tr><td><code>Longitude</code></td><td><div style="color:#0000FF; font-size: 10pt" id="lonbox"></td></tr>
 <tr><td><code>Moving Speed</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="mspeed"></div></td></tr>
 <tr><td><code>Last Move</code></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="lmove"></td></tr>
-<tr><td><code>Lost mode? <code><input type="checkbox" onclick='lostmodeClick(this);'></td></tr>
+<tr><td><code>Lost mode? <code><input type="checkbox" onclick='lostmodeClick(this);'></td><td><div style="font-size: 9pt; font-family:Trebuchet MS, Helvetica, sans-serif" id="distanceKM"></td></tr>
 <tr><td colspan="2"><hr></td></tr>
 <tr><td colspan="2"><div style="font-size: 8pt; font-family:Tahoma, Geneva, sans-serif" id="rfresh"></div></td></tr>
 </table>
@@ -66,6 +66,11 @@ var newmap = null;
 var latbox='';
 var lonbox='';
 var t = 5;
+// distance variable
+var lat1='';
+var lon1='';
+var lat2='';
+var lon2='';
 
 function InitMap() {
 	var CenterCity = new google.maps.LatLng(-6.117427, 106.153011);
@@ -83,6 +88,7 @@ function InitMap() {
 	map = new google.maps.Map(document.getElementById("map"), mapParam);
 	map.setTilt(0);
 	map.panTo(CenterCity);
+	getLastlatlon();
 }
 
 // menampilkan info
@@ -135,19 +141,25 @@ function Marking(latbox,lonbox) {
 }
 
 var myVar = setInterval(function(){timecount();},1000);
+function timecount() {
+	document.getElementById("rfresh").innerHTML = 'wait ' + t +' second(s) to update';
+	t = t-1;
+	if (t<0) {
+		getlatlon();
+		t = 5;
+	}
+}
 
-function getlatlon() {	
+function getLastlatlon() {	
 	var formData = $("#mapform").serializeArray();
 	
 	var URL = $("#mapform").attr('action');
 	$.post(URL, formData, function(data, textStatus, jqXHR){
 		var geoloc = JSON.parse(data);
-		//alert(geoloc.device_id);
-		Marking(geoloc.latitude,geoloc.longitude);
+		lat1 = geoloc.latitude;
+		lon1 = geoloc.longitude;
 		document.getElementById("device_id").innerHTML = geoloc.device_id;
-		document.getElementById("owner").innerHTML = 'Luqman Sahidin';	
-		document.getElementById("mspeed").innerHTML = geoloc.mspeed + ' kmph';
-		document.getElementById("lmove").innerHTML = geoloc.lastmove;
+		document.getElementById("owner").innerHTML = 'Luqman Sahidin';
 			
 	}).fail(function(jqXHR, textStatus, errorThrown) 
 	{
@@ -155,20 +167,72 @@ function getlatlon() {
 	});
 }
 
+function getlatlon() {	
+	var formData = $("#mapform").serializeArray();
+	var lat0='';
+	var lon0='';
+	var starttime='';
+	var endtime='';
+	
+	var URL = $("#mapform").attr('action');
+	$.post(URL, formData, function(data, textStatus, jqXHR){
+		var geoloc = JSON.parse(data);
+		//alert(geoloc.device_id);
+		Marking(geoloc.latitude,geoloc.longitude);
+		endtime = geoloc.gpstime;
+		document.getElementById("mspeed").innerHTML = getSpeed(getDistanceKM(lat1, lon1, geoloc.latitude, geoloc.longitude), endtime, starttime) + ' Kmh';
+		starttime = endtime;
+		document.getElementById("lmove").innerHTML = geoloc.lastmove;
+		if (lostmode){
+			lat0 = lat1;
+			lon0 = lon1;
+			document.getElementById("distanceKM").innerHTML = 'distance ' + getDistanceKM(lat0, lon0, geoloc.latitude, geoloc.longitude) + ' Km';
+		} else {
+			lat1 = geoloc.latitude;
+			lon1 = geoloc.longitude;
+		}
+			
+	}).fail(function(jqXHR, textStatus, errorThrown) 
+	{
+		$("#msg").html('<pre><code class="prettyprint">AJAX Request Failed<br/> textStatus='+textStatus+', errorThrown='+errorThrown+'</code></pre>');
+	});
+}
+
+function getSpeed(spit, endtime, starttime){
+	//var distance = geolib.getDistance(start, end);
+	var time = ((endtime*1)/1000) - ((starttime*1)/1000);
+	var distance = spit;
+	var mPerHr = (distance/2400)*3600;
+	var speed = Math.round(mPerHr * 0.001 * 10000)/10000;
+	if (mPerHr < 1)
+		mPerHr = 0;
+	return mPerHr;
+}
+
+function getDistanceKM(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return Math.round(d * 10000) / 10000;
+
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+
 function lostmodeClick(value){
 	if (value.checked){
 		lostmode = true;
 	} else {
 		lostmode = false;
-	}
-}
-
-function timecount() {
-	document.getElementById("rfresh").innerHTML = 'wait ' + t +' second(s) to update';
-	t = t-1;
-	if (t<0) {
-		getlatlon();
-		t = 5;
+		clearMarkers();
 	}
 }
 
