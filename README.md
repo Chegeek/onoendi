@@ -15,13 +15,13 @@ with 2 model communication, Text Message and HTTP Data. Now the device is more s
 - Monitor and Control from mobile device (will..)
 
 ### SMS Command
-- AUTH<space>new phone number<br>
+- AUTH(space)new phone number<br>
   This command will tell machine to enroll new mobile phone number as authenticated number.
 - POS<br>
   Get current position then send it back to sender (authenticated number/owner).
-- USSD<space>ussd_code<br>
+- USSD(space)ussd_code<br>
   Do the request from sender, process the ussd code then report it back.<br>
-  (e.g USSD<space>*123# )
+  (e.g USSD(space)*123# )
 - STATUS<br>
   Report the status of cut-off power ON/OFF
 
