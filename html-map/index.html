@@ -62,6 +62,7 @@ var marker = null;
 var markers = [];
 var lostmode = false;
 var newmap = null;
+var cone = '';
 
 var latbox='';
 var lonbox='';
@@ -98,9 +99,15 @@ function displayLatLon(point){
 }
 
 function addMarker(location) {
+if (lostmode){
+  cone = './icon/dotpurp.png';
+ } else {
+  cone = './icon/iconpos.png';
+}
   var marker = new google.maps.Marker({
     position: location,
-    map: map, draggable:false
+    map: map, draggable:false,
+    icon: cone
   });
   markers.push(marker);
 }
@@ -190,6 +197,7 @@ function getlatlon() {
 		} else {
 			lat1 = geoloc.latitude;
 			lon1 = geoloc.longitude;
+			document.getElementById("distanceKM").innerHTML = '';
 		}
 			
 	}).fail(function(jqXHR, textStatus, errorThrown) 
@@ -230,6 +238,7 @@ function deg2rad(deg) {
 function lostmodeClick(value){
 	if (value.checked){
 		lostmode = true;
+		clearMarkers();
 	} else {
 		lostmode = false;
 		clearMarkers();
