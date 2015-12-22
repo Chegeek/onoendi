@@ -15,13 +15,13 @@ with 2 model communication, Text Message and HTTP Data. Now the gps device is mo
 - Monitor and Control from mobile device (will..)
 
 ### SMS Format
-Format: #password,command=<value><br>
+Format: #password,command=value<br>
 e.g. #12345,apn=internet<br>
 send command to device cellular number<br>
 more info can read from manual pdf file include
 
 ### Editor and Compiler
-- Arduino 1.6.5
+- Arduino 1.6.5 <br>
 
 
 ## V1 - Wiznet W5100
