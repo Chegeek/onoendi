@@ -1,7 +1,7 @@
 # ONOENDI 
-## V2 - SIM800L
+## V2.0 - SIM800L
 In this version I'm using GSM shield (SIM800L) small and cheap :) there is some feature addition.
-with 2 model communication, Text Message and HTTP Data. Now the device is more simple:<br>
+with 2 model communication, Text Message and HTTP Data. Now the gps device is more complex:<br>
 1. Arduino Pro Mini 328 (in this version)<br>
 2. SIM800L GSM Shield<br>
 3. GPS Module VK2828U7G5LF ublox 7<br>
@@ -9,21 +9,16 @@ with 2 model communication, Text Message and HTTP Data. Now the device is more s
 
 ### Features [October 03, 2015]
 - Track movement
-- Lost-mode
-- Engine shutdown/cut-off power remotely
+- Display track log - support by Geolink
+- Engine shutdown/cut-off power remotely from sms
 - Environment monitoring/reporting (will..)
 - Monitor and Control from mobile device (will..)
 
-### SMS Command
-- AUTH(space)new phone number<br>
-  This command will tell machine to enroll new mobile phone number as authenticated number.
-- POS<br>
-  Get current position then send it back to sender (authenticated number/owner).
-- USSD(space)ussd_code<br>
-  Do the request from sender, process the ussd code then report it back.<br>
-  (e.g USSD(space)*123# )
-- STATUS<br>
-  Report the status of cut-off power ON/OFF
+### SMS Format
+Format: #password,command=<value>
+e.g. #12345,apn=internet
+send command to device cellular number
+more info can read from manual pdf file include
 
 
 ## V1 - Wiznet W5100
