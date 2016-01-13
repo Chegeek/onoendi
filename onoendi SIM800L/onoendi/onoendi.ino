@@ -1,5 +1,10 @@
 // ONONENDI GPS TRACKER
-// OCT 15 (c) Yugan Studio
+// OCT 15 (c) Yugan Studio Works
+
+// Latest on 13 Jan 16 06:54 GMT+7
+// ~ ON/OFF and GPS_SPEED_TO_DETECT definition
+// ~ data mode function
+
 
 #include "config.h"
 #include <EEPROM.h>
@@ -18,7 +23,7 @@ uint8_t interval_sms = 0; // interval checking sms
 bool gpsfix = false;      // fix gps indication
 bool constate = false, reload = false;
 char iso_date_time[20];   // time attached to every data line
-char modem_reply[150];     // data received from modem, max 150 chars
+char modem_reply[150];    // data received from modem, max 150 chars
 char data_current[70];    // data bucket collected from gps
 bool power_reboot = false;
 bool save_config = false;
@@ -49,9 +54,10 @@ struct settings {
   char imei[20];
   char key[12];
   char smspass[10];
-  int  interval;
   char apn[15];
-  byte power_ignition;
+  byte interval;
+  bool data_log = true; // data mode is active or not
+  bool power_ignition;
   bool loginPacket = false;  // Try to send login packet to server, need to save when device restart
 };
 
@@ -66,16 +72,13 @@ void setup(){
   modem.begin(9600);
   gps.begin(4800);
 
-  debug_println(F("---------------------------"));
-  debug_println(F("   ONONENDI GPS TRACKER"));
-  debug_println(F("2015 (c) Yugan Studio Works"));
-  debug_println(F("---------------------------\r\n"));
+  debug_println(F("ONONENDI GPS STARTING ...\r\n"));
 
   // if there any exist configuration on eeprom?
   loadeeprom();
   
   // check power state? 1 is relay off means power on and 0 is relay on.
-  if (config.power_ignition == 1){
+  if (config.power_ignition == ON){
     digitalWrite(RELAYPIN, LOW);
   } else {
     digitalWrite(RELAYPIN, HIGH);
@@ -104,24 +107,26 @@ void loop() {
 
     debug_println(data_current);
 
-    if (config.loginPacket) { // this function send login packet to server when command from sms
+    if (config.loginPacket) { // send login packet to the server when get command
       gpsfix = true;
       config.loginPacket = false;
       save_config = true;
     }
-  
-    if (gpsfix) {
-        modem.listen(); // set port to listen modem
-        delay(500);
-        modem_establish_connection();
-        modem_send_data();
-      }
+
+    if (config.data_log){
+      if (gpsfix) {
+          modem.listen(); // set port to listen modem
+          delay(500);
+          modem_establish_connection();
+          modem_send_data();
+        }
+    }
       
     LedStat();
     interval = 0;
   }
   
-  if (interval_sms >= SMS_INTERVAL){   // check sms every 3 seconds
+  if (interval_sms >= SMS_INTERVAL){   // check sms every SMS_INTERVAL seconds
     modem.listen();
     delay(500);
     sms_check();
@@ -133,7 +138,6 @@ void loop() {
   
   interval++;
   interval_sms++;
-  delay(1000); // breath
+  delay(200); // breath
   
-  debug_println(F("Bikini bottom()\r\n"));
 }

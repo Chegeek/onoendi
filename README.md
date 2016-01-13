@@ -1,4 +1,8 @@
 # ONOENDI 
+##V2.1 - SIM800L
+~ adding some definition ON/OFF and GPS_SPEED_TO_DETECT<br>
+~ adding data mode function<br>
+
 ## V2.0 - SIM800L
 In this version I'm using GSM shield (SIM800L) small and cheap :) there is some feature addition.
 with 2 model communication, Text Message and HTTP Data. Now the gps device is more complex:<br>

@@ -189,7 +189,7 @@ void collect_gps_data(){
       } else if(date_gps == 0){
           debug_println(F("Date is not valid!"));
       
-        } else if(fkmph < 2){
+        } else if(fkmph < GPS_SPEED_TO_DETECT){
             debug_print(F("Speed under human walking/unstable position : "));
             debug_println(fkmph);
       
@@ -210,7 +210,6 @@ void collect_gps_data(){
             
   if(gpsfix) {
     //fix was found
-    debug_println(F("GPS already available"));
     debug_println(data_current);
     
     } else {

@@ -9,7 +9,12 @@
 //#define GPSRST  10 //no need to reset
 #define MCURST  5
 
+#define ON  1
+#define OFF 2 // using 2, cannot use 0. because zero is default value after eeprom erase
+
+#define GPS_SPEED_TO_DETECT 5 // means move 5 kmph, human walking.
+
 #define DEFAULT_INTERVAL  5       // 5 seconds
-#define DEFAULT_POWERIGNITION  1  // relay LOW
+#define DEFAULT_POWERIGNITION  ON // relay LOW
 #define SMS_INTERVAL  3           // 3 seconds
 #define URL "updates.geolink.io/index.php?"

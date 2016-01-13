@@ -188,6 +188,30 @@ void sms_cmd_run(char *cmd, char *phone) {
     save_config = true;
   }
 
+  // Set Data Mode
+  tmp = strstr(cmd, "data=");
+  if(tmp != NULL) {
+    debug_println(F("sms_cmd_run(): Set Data mode detected"));
+    
+    tmp += strlen("data=");
+    debug_print(F("sms_cmd_run(): Set data mode to: "));
+    debug_println(tmp);
+//    if(tmp == "off") {  //validation is hard to compare value using equals (==) dont know why?
+    if (strstr(tmp, "off") != NULL){
+      config.data_log = false;  // using 2, cannot use 0. because zero is default value after eeprom erase
+    } else {
+      config.data_log = true;
+    }
+    
+    //send SMS reply
+    if(config.data_log == true) {
+      sms_send_msg("Data Mode ON", phone);
+    } else {
+      sms_send_msg("Data Mode OFF", phone);
+    }
+    save_config = true;
+  }
+
   // Set Power Cut Relay
   tmp = strstr(cmd, "power=");
   if(tmp != NULL) {
@@ -196,15 +220,14 @@ void sms_cmd_run(char *cmd, char *phone) {
     tmp += strlen("power=");
     debug_print(F("sms_cmd_run(): Set power to: "));
     debug_println(tmp);
-//    if(tmp == "off") {  //validation is hard to compare value using if == I dont know why?
     if (strstr(tmp, "off") != NULL){
-      config.power_ignition = 2;  // using 2, cannot use 0. because zero is default value after eeprom erase
+      config.power_ignition = OFF;
     } else {
-      config.power_ignition = 1;
+      config.power_ignition = ON;
     }
     
     //send SMS reply
-    if(config.power_ignition == 1) {
+    if(config.power_ignition == ON) {
       sms_send_msg("Power ignition ON", phone);
     } else {
       sms_send_msg("Power ignition OFF", phone);
