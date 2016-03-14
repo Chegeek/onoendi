@@ -1,15 +1,16 @@
 void modem_startup(){
   debug_println(F("modem_startup() started"));
-//  pinMode(MODEMRST, INPUT);  // bug after reset not going up again. MCU reset, pin mode also reset to default :D
-  digitalWrite(LEDPIN,HIGH);
+  // MCU reset, pin mode reset to default :D
+  digitalWrite(LEDPIN, HIGH);
   // checks if the module is started
   if (modem_check_at("AT", "OK", 1000) == 0){
     // waits for an answer from the module  
     // Send AT every two seconds and wait for the answer
     while (modem_check_at("AT", "OK", 2000) == 0);
   }
+  
   while (modem_check_at("AT+CREG?","+CREG: 0,1",1000) == 0);
-  digitalWrite(LEDPIN,LOW);     // let's give some LED starting indication
+  digitalWrite(LEDPIN, LOW);     // let's give some LED starting indication
   delay(500);
   digitalWrite(LEDPIN, HIGH);
   delay(500);
@@ -26,24 +27,13 @@ void modem_get_imei() {
   
   unsigned long previous;
   int i = 0;
-
-    modem.println("AT+CGSN");
-    // this loop waits for the answer
-    previous = millis();
-    do{
-        if(modem.available() != 0){    
-            modem_reply[i] = modem.read();
-            i++;
-        }
-        // Waits for the asnwer with time out
-    }
-    while((millis() - previous) < 100);
-    //debug_println(modem_reply);
+  if (modem_check_at("AT+CGSN","OK",1000) == 1){
     char *tmp = strtok(modem_reply, "AT+CGSN\r\n");
     for(i=0; i<strlen(tmp); i++) {
       config.imei[i] = tmp[i];
-      if(i > 17) { //imei can not exceed 20 chars
+      if(i > 15) { //imei can not exceed 15 chars
         break;
+      }
     }
   }
   config.imei[i+1] = '\0';
@@ -145,13 +135,13 @@ void modem_send_data(){
   debug_println(F("modem_send_data() completed"));
 }
 
-int8_t modem_check_at(char* ATcommand, char* expected_answer, unsigned int timeout){
+int8_t modem_check_at(const char* ATcommand, const char* expected_answer, unsigned int timeout){
   unsigned long previous;
   
   x = 0;
   answer = 0;
 
-  memset(modem_reply, '\0', 100);    // Clear modem_reply
+  memset(modem_reply, '\0', 150);    // Clear modem_reply
 
   delay(100);
 
@@ -186,8 +176,7 @@ int8_t modem_check_at(char* ATcommand, char* expected_answer, unsigned int timeo
 void modem_wait_at() {
   unsigned long timeout = millis();
 
-//  modem_reply[0] = '\0';
-  memset(modem_reply, '\0', 100);    // Initialize the string
+  memset(modem_reply, '\0', 150);    // Initialize the string
 
   while (!strncmp(modem_reply,"AT+",3) == 0) {
     if((millis() - timeout) >= 2000) {

@@ -49,7 +49,7 @@ void save2eeprom(){
     
   debug_println(F("save2eeprom() started"));
   eeAddress = 0; //go to zero
-  float mem_id = 'yuganstudio';  // Variable to store in EEPROM.
+  float mem_id = '1';  // Variable to store in EEPROM.
   // One simple call, with the address first and the object second.
   EEPROM.put(eeAddress, mem_id);
   eeAddress += sizeof(float); // Move address to the next byte
@@ -71,12 +71,13 @@ void loadeeprom(){
   debug_println(config.interval);
   debug_println(config.apn);
   debug_println(config.power_ignition);
+  debug_println(config.data_log);
   debug_println(config.loginPacket);
   
   debug_println(F("loadeeprom() completed"));
 }
 
-void fill_preconfig(char * param, char * pvalue){
+void fill_preconfig(char * param, const char * pvalue){
   int i;
   for(i=0; i<strlen(pvalue); i++) {
     param[i] = pvalue[i];

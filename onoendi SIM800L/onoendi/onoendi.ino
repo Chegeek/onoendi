@@ -1,7 +1,12 @@
 // ONONENDI GPS TRACKER
 // OCT 15 (c) Yugan Studio Works
 
-// Latest on 13 Jan 16 06:54 GMT+7
+// Latest update on 13 March 16 13:37 GMT+7
+// ~ Bug Fixed modem_get_imei()
+// ~ Manage data length
+// ~ Change the way command handler
+
+// Update on 13 Jan 16 06:54 GMT+7
 // ~ ON/OFF and GPS_SPEED_TO_DETECT definition
 // ~ data mode function
 
@@ -24,12 +29,14 @@ bool gpsfix = false;      // fix gps indication
 bool constate = false, reload = false;
 char iso_date_time[20];   // time attached to every data line
 char modem_reply[150];    // data received from modem, max 150 chars
-char data_current[70];    // data bucket collected from gps
+char data_current[60];    // data bucket collected from gps
+char msg[110];            // buffer command message
 bool power_reboot = false;
 bool save_config = false;
+byte sending = 0;
 
-char lat_current[15];
-char lon_current[15];
+char lat_current[12];
+char lon_current[12];
 
 float flat, flon;
 unsigned long age;
@@ -37,8 +44,8 @@ unsigned long age;
 unsigned long last_time_gps, last_date_gps;
 
 TinyGPS t_gps;
-SoftwareSerial modem(3,4);
-SoftwareSerial gps(6,7);
+SoftwareSerial gps(3,4);
+SoftwareSerial modem(6,7);
 
 static void gpsdelay(unsigned long ms);
 
@@ -51,13 +58,13 @@ static void gpsdelay(unsigned long ms);
 #endif
 
 struct settings {
-  char imei[20];
+  char imei[16];
   char key[12];
   char smspass[10];
   char apn[15];
   byte interval;
-  bool data_log = true; // data mode is active or not
-  bool power_ignition;
+  uint8_t data_log; // data mode is active or not
+  uint8_t power_ignition;
   bool loginPacket = false;  // Try to send login packet to server, need to save when device restart
 };
 
@@ -66,9 +73,10 @@ settings config;
 void setup(){
   pinMode(RELAYPIN, OUTPUT);
   
-#ifdef DEBUG
-  Serial.begin(115200);
-#endif
+  #ifdef DEBUG
+    Serial.begin(115200);
+  #endif
+
   modem.begin(9600);
   gps.begin(4800);
 
@@ -113,10 +121,17 @@ void loop() {
       save_config = true;
     }
 
-    if (config.data_log){
+      modem.listen(); // set port to listen modem
+      delay(500);
+      // gsm ready or not
+      if (modem_check_at("AT+CREG?","+CREG: 0,1",200) == 0){ // if not
+        pinMode(MODEMRST, OUTPUT);
+        reboot_mcu();
+      }
+
+    if (config.data_log == ON){
+      // get fix
       if (gpsfix) {
-          modem.listen(); // set port to listen modem
-          delay(500);
           modem_establish_connection();
           modem_send_data();
         }
